@@ -1,0 +1,78 @@
+:root {
+    --bg-color: #1F2937;
+    --grid-color: #0891B2; /* cyan-600 */
+    --highlighted-primary: #38BDF8; /* light-blue-400 */
+    --highlighted-secondary: #075985;/* light-blue-800 */
+    --highlighted-primary-error: #DC2626; /* red-600 */
+}
+
+body * {
+    font-family: 'Ubuntu Mono';
+}
+
+html, body {
+    color: white;
+    background-color: var(--bg-color);
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+}
+
+#content-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+}
+
+#game-container {
+    display: grid;
+    grid: repeat(4, 1fr) / repeat(4, 1fr);
+    gap: 2%;
+
+    height: 90%;
+    aspect-ratio: 1/1;
+}
+
+.board {
+    display: grid;
+    grid: repeat(4, 1fr) / repeat(4, 1fr);
+    gap: 1px;
+
+    width: 100%;
+    aspect-ratio: 1/1;
+
+    border-radius: 5%;
+    background-color: var(--grid-color);
+    overflow: hidden;
+}
+
+.cell-wrapper {
+    display: table-cell;
+    background-color: #0F172A; /* blue-gray-900 */
+}
+
+.cell-wrapper div.selected {
+    background-color: var(--highlighted-primary);
+}
+
+.cell-wrapper div.highlighted {
+    background-color: var(--highlighted-secondary);
+}
+
+.cell-wrapper div.error {
+    background-color: var(--highlighted-primary-error);
+}
+
+.cell-wrapper div.error-highlighted {
+    background-color: var(--highlighted-secondary);
+}
+
+.cell-wrapper div {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+}
