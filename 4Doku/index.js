@@ -18,6 +18,7 @@ let isSelected = false;
 let selectedCell = [0, 0, 0, 0];
 
 const prevBoard = [];
+
 const loop4D = (s, ...funcs) => { // Loops a function over (w, x, y, z) < s
 	funcs.unshift(() => {}, () => {}, () => {}, () => {}); // Pad the function list with empty functions
 	const fx = funcs.pop();
@@ -37,13 +38,14 @@ const loop4D = (s, ...funcs) => { // Loops a function over (w, x, y, z) < s
 		}
 	}
 }
+const randomItem = a => a[Math.random() * a.length | 0];
 
 class Cell {
 	constructor(element) {
 		this.element = element;
 
 		this.value = null;
-		this.penciled = new Array(base ** 4).fill(0);
+		this.penciled = new Array(base ** 4).fill(false);
 	}
 
 	pencil(x) {
@@ -51,10 +53,22 @@ class Cell {
 		this.penciled[x] = !this.penciled[x];
 	}
 
+	erase(x) {
+		// this.value = null;
+		this.penciled[x] = 0;
+	}
+
 	pen(x) {
 		this.value = x;
-		if (x === null) { this.element.innerText = ''; }
-		else { this.element.innerText = charset[x]; }
+		this.update();
+	}
+
+	update() {
+		if (this.value === null) {
+			this.element.innerText = '';
+		} else {
+			this.element.innerText = charset[this.value];
+		}
 	}
 
 	clone() {
@@ -80,6 +94,12 @@ const cloneBoard = () => {
 	});
 
 	return cloned;
+}
+
+const updateBoard = () => {
+	loop4D(basesqd, (x, y, z, w) => {
+		getCell(x, y, z, w).update();
+	});
 }
 
 const getNeighbors = (x, y, z, w) => {
@@ -193,7 +213,7 @@ const loadBoard = () => {
 
 					cell.classList.add('cell-wrapper');
 					div.id = `cell-${x}-${y}-${z}-${w}`;
-					// div.innerText = charset[Math.random() * 16 | 0];
+					// div.innerText = charset[Math.`random`() * 16 | 0];
 					div.addEventListener('click', () => {
 						// div.innerText = charset[selectedNumber];
 						selectCell(x, y, z, w);
@@ -212,34 +232,84 @@ const loadBoard = () => {
 }
 
 const generateCompleteBoard = () => {
+	// Create a random board via Wave Function Collapse
+
 	// Pencil in all possible numbers for every cell
 	loop4D(basesqd, (...pos) => {
-		getCell(...pos).penciled = new Array(16).fill(1);
+		getCell(...pos).penciled = new Array(16).fill(true);
 	});
 
-	// Select a random square
-	const randomPos = new Array(4).fill(1).map(() => Math.random() * basesqd | 0 );
-	const randomValue = Math.random() * (base ** 4) | 0;
-	getCell(...randomPos).pencil(randomValue);
-	prevBoard.push(cloneBoard());
-	getCell(...randomPos).pen(randomValue);
-
-	while (false) {
-		let lowestEntropy = 9;
+	// Wave Function Collapse
+	let cellsRemaining = basesqd ** 4;
+	while (cellsRemaining > 1) {
+		// Find cells with lowest entropy
+		let lowestEntropy = base ** 4 + 1;
 		let lowestEntropyCells = [];
+		cellsRemaining = 0;
+		let needsToBacktrack = false;
+
 		loop4D(basesqd, (...pos) => {
+
 			const cell = getCell(...pos);
-			if (cell.value !== null) { continue; } // Ignore solved cells
+			if (cell.value !== null) { return; } // Ignore solved cells
+			cellsRemaining += 1;
+
+			if (needsToBacktrack) { return; }
 
 			// Calculate entropy
 			const entropy = cell.penciled.reduce((a, b) => a + b, 0);
-			if (entropy == 0) { /* TODO: Backtrack */ } // No possible solutions; must backtrack
+			if (entropy == 0) { // No possible solutions; must backtrack
+				needsToBacktrack = true;
+				return;
+			}
 			if (entropy < lowestEntropy) {
 				lowestEntropy = entropy;
-				lowestEntropyCells = [];
+				lowestEntropyCells = [pos];
+			}
+			if (entropy == lowestEntropy) {
+				lowestEntropyCells.push(pos);
 			}
 		});
+		
+		// Revert to a previously pseudo-valid board
+		if (needsToBacktrack) { 
+			board = prevBoard.pop();
+			continue;
+		}
+		
+		// Pick a random cell with minimum entropy
+		const randomPos = randomItem(lowestEntropyCells);
+		const cell = getCell(...randomPos);
+
+		// Pick a random value
+		const possibleValues = [];
+		cell.penciled.forEach((x, i) => {
+			if (x) { possibleValues.push(i); }
+		});
+		const randomValue = randomItem(possibleValues);
+
+		// Set value and push to backtracking stack
+		cell.erase(randomValue);
+		prevBoard.push(cloneBoard());
+		cell.pen(randomValue);
+
+		const neighbors = getNeighbors(...randomPos);
+		for (const i in neighbors) {
+			const neighbor = neighbors[i];
+			const neighborCell = getCell(...neighbor);
+
+			neighborCell.erase(randomValue);
+		}
 	}
+	prevBoard.length = 0;
+}
+
+const countSolutions = () => {
+	
+}
+
+const generatePartialBoard = () => {
+
 }
 
 const setSelectedCell = a => {
