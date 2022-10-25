@@ -1,0 +1,60 @@
+:root{
+    --bg-color: #1F2937;
+    --dividing-color: #D6D3D1; /* warm-gray-300 */
+}
+
+html, body {
+    color: white;
+    background-color: var(--bg-color);
+    font: 'Ubuntu Mono';
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+#content-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    width: 100%;
+    height: 100%;
+}
+
+#game-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+
+    width: 30%;
+    height: 95%;
+}
+
+#player-container {
+    background-color: orange;
+}
+
+/* 82.8% - 3.9% */
+.player {
+    position: absolute;
+    top: 0;
+
+    width: 50px;
+    aspect-ratio: 1/1;
+
+    background-color: blue;
+}
+
+.floor-divider {
+    background-color: var(--dividing-color);
+    width: 100%;
+    height: 2px;
+}
+
+#lava {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    bottom: -95%;
+    background-color: red;
+}
