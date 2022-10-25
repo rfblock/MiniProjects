@@ -38,7 +38,10 @@ const loop4D = (s, ...funcs) => { // Loops a function over (w, x, y, z) < s
 		}
 	}
 }
-const randomItem = a => a[Math.random() * a.length | 0];
+const randomItem = a => {
+	const i = Math.random() * a.length | 0;
+	return [a[i], i];
+};
 
 class Cell {
 	constructor(element) {
@@ -278,7 +281,7 @@ const generateCompleteBoard = () => {
 		}
 		
 		// Pick a random cell with minimum entropy
-		const randomPos = randomItem(lowestEntropyCells);
+		const randomPos = randomItem(lowestEntropyCells)[0];
 		const cell = getCell(...randomPos);
 
 		// Pick a random value
@@ -286,7 +289,7 @@ const generateCompleteBoard = () => {
 		cell.penciled.forEach((x, i) => {
 			if (x) { possibleValues.push(i); }
 		});
-		const randomValue = randomItem(possibleValues);
+		const randomValue = randomItem(possibleValues)[0];
 
 		// Set value and push to backtracking stack
 		cell.erase(randomValue);
@@ -304,12 +307,76 @@ const generateCompleteBoard = () => {
 	prevBoard.length = 0;
 }
 
-const countSolutions = () => {
-	
+const solveBoard = () => {
+	return false;
 }
 
 const generatePartialBoard = () => {
+	generateCompleteBoard();
 
+	let canRemoveCells = true;
+	let lastValidBoard = cloneBoard();
+
+	const untestedCells = [];
+	loop4D(basesqd, (...pos) => untestedCells.push(pos));
+	console.log(untestedCells);
+
+	while (canRemoveCells) {
+
+		// Get a random cell that hasn't been selected
+		const randomIndex = randomItem(untestedCells)[1];
+		const randomPos = untestedCells[randomIndex];
+		const randomCell = getCell(...randomPos);
+		const originalValue = randomCell.value;
+
+		// Remove cell from list
+		untestedCells.splice(randomIndex, 1);
+
+		// Calculate possible values
+		const untestedValues = [];
+		const neighbors = getNeighbors(...randomPos);
+
+		randomCell.penciled = new Array(base ** 4).fill(true);
+		randomCell.erase(originalValue);
+		randomCell.pen(null);
+
+		neighbors.forEach(neighborPos => {
+			const neighbor = getCell(...neighborPos);
+			randomCell.erase(neighbor.value);
+		});
+
+		randomCell.penciled.forEach((x, i) => {if (x) { untestedValues.push(i) } });
+
+		// Skip if no other values are found
+		if (untestedValues.length == 0) {
+			lastValidBoard = cloneBoard();
+			continue;
+		}
+
+		// Attempt to find alternate solutions
+		const boardToVerify = cloneBoard();
+		let solutionFound = false;
+		untestedValues.forEach(val => {
+			board = boardToVerify;
+
+			// Attempt to find a solution with a given value
+			randomCell.pen(val);
+			
+			if (solveBoard()) {
+				solutionFound = true;
+				return;
+			}
+		});
+
+		if (solutionFound) {
+			board = lastValidBoard;
+			continue;
+		}
+
+		lastValidBoard = cloneBoard();
+
+		return;
+	}
 }
 
 const setSelectedCell = a => {
