@@ -32,12 +32,16 @@ html, body {
 
 #player-container {
     background-color: orange;
+	position: relative;
+	width: 100%;
+
+	flex: 0;
 }
 
 /* 82.8% - 3.9% */
 .player {
     position: absolute;
-    top: 0;
+    bottom: 0;
 
     width: 50px;
     aspect-ratio: 1/1;
